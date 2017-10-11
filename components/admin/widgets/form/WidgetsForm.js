@@ -25,7 +25,8 @@ import {
   setBand,
   setVisualizationType,
   setLayer,
-  setTitle
+  setTitle,
+  setEmbed
 } from 'components/widgets/editor/redux/widgetEditor';
 
 // Constants
@@ -126,6 +127,7 @@ class WidgetsForm extends React.Component {
       visualizationType,
       band,
       layer,
+      embed,
       title
     } = widgetEditor;
 
@@ -155,14 +157,15 @@ class WidgetsForm extends React.Component {
             const newWidgetConfig = {
               widgetConfig: Object.assign(
                 {},
+                formObj.widgetConfig,
                 // If the widget is a map, we want to add some extra info
                 // in widgetConfig so the widget is compatible with other
                 // apps that use the same API
                 // This info is not necessary for the editor because it is
                 // already saved in widgetConfig.paramsConfig
                 (
-                  visualizationType === 'map'
-                    ? { type: 'map', layer_id: layer && layer.id }
+                  visualizationType !== 'chart'
+                    ? { type: visualizationType }
                     : {}
                 ),
                 {
@@ -179,10 +182,10 @@ class WidgetsForm extends React.Component {
                     filters,
                     areaIntersection,
                     band: band && { name: band.name },
-                    layer: layer && layer.id
+                    layer: layer && layer.id,
+                    embed
                   }
-                },
-                formObj.widgetConfig
+                }
               )
             };
 
@@ -235,7 +238,7 @@ class WidgetsForm extends React.Component {
 
   onChange(obj) {
     const form = Object.assign({}, this.state.form, obj);
-    this.setState({ form });
+    this.setState({ form }, () => { console.log(form); });
   }
 
   onStepChange(step) {
@@ -261,7 +264,7 @@ class WidgetsForm extends React.Component {
   }
 
   validateWidgetConfig() {
-    const { value, category, chartType, visualizationType, layer } = this.props.widgetEditor;
+    const { value, category, chartType, visualizationType, layer, embed } = this.props.widgetEditor;
 
     switch (visualizationType) {
       case 'chart':
@@ -270,6 +273,8 @@ class WidgetsForm extends React.Component {
         return !!chartType && !!category && !!value;
       case 'map':
         return !!layer;
+      case 'embed':
+        return !!embed.valid;
       default:
         return false;
     }
@@ -285,6 +290,8 @@ class WidgetsForm extends React.Component {
         return toastr.error('Error', 'Value, Category and Chart type are mandatory fields for a widget visualization.');
       case 'map':
         return toastr.error('Error', 'Layer is mandatory field for a widget visualization.');
+      case 'embed':
+        return toastr.error('Error', 'Embed url is mandatory field for a widget visualization.');
       default:
         return false;
     }
@@ -305,7 +312,8 @@ class WidgetsForm extends React.Component {
         filters,
         limit,
         chartType,
-        layer
+        layer,
+        embed
       } = paramsConfig;
 
       // We restore the type of visualization
@@ -324,6 +332,7 @@ class WidgetsForm extends React.Component {
       if (filters) this.props.setFilters(filters);
       if (limit) this.props.setLimit(limit);
       if (chartType) this.props.setChartType(chartType);
+      if (embed) this.props.setEmbed(embed);
       if (this.state.form.name) this.props.setTitle(this.state.form.name);
     }
   }
@@ -391,7 +400,8 @@ WidgetsForm.propTypes = {
   setVisualizationType: PropTypes.func.isRequired,
   setBand: PropTypes.func.isRequired,
   setLayer: PropTypes.func.isRequired,
-  setTitle: PropTypes.func.isRequired
+  setTitle: PropTypes.func.isRequired,
+  setEmbed: PropTypes.func.isRequired
 };
 
 const mapDispatchToProps = dispatch => ({
@@ -407,6 +417,7 @@ const mapDispatchToProps = dispatch => ({
   setVisualizationType: vis => dispatch(setVisualizationType(vis)),
   setBand: band => dispatch(setBand(band)),
   setTitle: title => dispatch(setTitle(title)),
+  setEmbed: title => dispatch(setEmbed(title)),
   setLayer: (layerId) => {
     new LayersService()
       .fetchData({ id: layerId })

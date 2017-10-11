@@ -27,6 +27,7 @@ const SET_BAND = 'widgetEditor/SET_BAND';
 const SET_LAYER = 'widgetEditor/SET_LAYER';
 const SET_TITLE = 'widgetEditor/SET_TITLE';
 const SET_BANDS_INFO = 'widgetEditor/SET_BANDS_INFO';
+const SET_EMBED = 'widgetEditor/SET_EMBED';
 
 /**
  * REDUCER
@@ -48,7 +49,12 @@ const initialState = {
   areaIntersection: null, // ID of the geostore object
   band: null, // Band of the raster dataset
   /** @type {{ [name: string]: { type: string, alias: string, description: string } }} */
-  bandsInfo: {} // Information of the raster bands
+  bandsInfo: {}, // Information of the raster bands
+  embed: {
+    src: '',
+    width: 560,
+    height: 315
+  }
 };
 
 export default function (state = initialState, action) {
@@ -232,6 +238,13 @@ export default function (state = initialState, action) {
       });
     }
 
+    case SET_EMBED: {
+      const embed = { ...state.embed, ...action.payload };
+      return Object.assign({}, state, {
+        embed
+      });
+    }
+
     default:
       return state;
   }
@@ -354,4 +367,8 @@ export function setLayer(layer) {
 
 export function setTitle(title) {
   return dispatch => dispatch({ type: SET_TITLE, payload: title });
+}
+
+export function setEmbed(embed) {
+  return dispatch => dispatch({ type: SET_EMBED, payload: embed });
 }
