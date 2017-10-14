@@ -14,10 +14,11 @@ export default class CardStatic extends React.Component {
   }
 
   render() {
-    const { background, backgroundSize, className, children } = this.props;
+    const { background, backgroundSize, className, clickable, children } = this.props;
     const style = { background, backgroundSize: backgroundSize || 'cover' };
     const classNameObj = classNames({
       'c-card-static': true,
+      'c-card-clickable': clickable,
       [className]: className
     });
 
